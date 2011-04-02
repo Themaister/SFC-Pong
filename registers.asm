@@ -1,0 +1,230 @@
+
+.equ INIDISP $2100
+
+.equ OBSEL $2101
+.equ OAMADDL $2102
+.equ OAMADDH $2103
+.equ OAMDATA $2104
+
+.equ BGMODE $2105
+.equ MOSAIC $2106
+
+.equ BG1SC $2107
+.equ BG2SC $2108
+.equ BG3SC $2109
+.equ BG4SC $211a
+
+.equ BG12NBA $210b
+.equ BG34NBA $210c
+
+.equ BG1HOFS $210d
+.equ BG1VOFS $210e
+.equ BG2HOFS $210f
+.equ BG2VOFS $2110
+.equ BG3HOFS $2111
+.equ BG3VOFS $2112
+.equ BG4HOFS $2113
+.equ BG4VOFS $2114
+
+.equ VMAIN $2115
+.equ VMADDL $2116
+.equ VMADDH $2117
+.equ VMDATAL $2118
+.equ VMDATAH $2119
+
+.equ M7SEL $211a
+.equ M7A $211b
+.equ M7B $211c
+.equ M7C $211d
+.equ M7D $211e
+
+.equ M7X $211f
+.equ M7Y $2120
+
+.equ CGADD $2121
+.equ CGDATA $2122
+
+.equ W12SEL $2123
+.equ W34SEL $2124
+.equ WOBJSEL $2125
+.equ WH0 $2126
+.equ WH1 $2127
+.equ WH2 $2128
+.equ WH3 $2129
+.equ WBGLOG $212a
+.equ WOBJLOG $212b
+
+.equ TM $212c
+.equ TS $212d
+.equ TMW $212e
+.equ TSW $212f
+
+.equ CGWSEL $2130
+.equ CGADSUB $2131
+.equ COLDATA $2132
+
+.equ SETINI $2133
+
+.equ MPYL $2134
+.equ MPYM $2135
+.equ MPYH $2136
+
+.equ SLHV $2137
+
+.equ OAMDATAREAD $2138
+.equ VMDATALREAD $2139
+.equ VMDATAHREAD $213a
+.equ CGDATAREAD $213b
+
+.equ OPHCT $213c
+.equ OPVCT $213d
+
+.equ STAT77 $213e
+.equ STAT78 $213f
+
+.equ APUIO0 $2140
+.equ APUIO1 $2141
+.equ APUIO2 $2142
+.equ APUIO3 $2143
+
+.equ WMDATA $2180
+.equ WMADDL $2181
+.equ WMADDM $2182
+.equ WMADDH $2183
+
+
+.equ JOYSER0 $4016
+.equ JOYSER1 $4017
+
+.equ NMITIMEN $4200
+
+.equ WRIO $4201
+
+.equ WRMPYA $4202
+.equ WRMPYB $4203
+.equ WRDIVL $4204
+.equ WRDIVH $4205
+.equ WRDIVB $4206
+
+.equ HTIMEL $4207
+.equ HTIMEH $4208
+
+.equ VTIMEL $4209
+.equ VTIMEH $420a
+
+.equ MDMAEN $420b
+.equ HDMAEN $420c
+
+.equ MEMSEL $420d
+
+.equ RDNMI $4210
+
+.equ TIMEUP $4211
+
+.equ HVBJOY $4212
+.equ RDIO $4213
+
+.equ RDDIVL $4214
+.equ RDDIVH $4215
+
+.equ RDMPYL $4216
+.equ RDMPYH $4217
+
+.equ JOY1L $4218
+.equ JOY1H $4219
+.equ JOY2L $421a
+.equ JOY2H $421b
+.equ JOY3L $421c
+.equ JOY3H $421d
+.equ JOY4L $421e
+.equ JOY4H $421f
+
+.equ DMAP0 $4300
+.equ DMAP1 $4310
+.equ DMAP2 $4320
+.equ DMAP3 $4330
+.equ DMAP4 $4340
+.equ DMAP5 $4350
+.equ DMAP6 $4360
+.equ DMAP7 $4370
+
+.equ BBAD0 $4301
+.equ BBAD1 $4311
+.equ BBAD2 $4321
+.equ BBAD3 $4331
+.equ BBAD4 $4341
+.equ BBAD5 $4351
+.equ BBAD6 $4361
+.equ BBAD7 $4371
+
+.equ A1T0L $4302
+.equ A1T1L $4312
+.equ A1T2L $4322
+.equ A1T3L $4332
+.equ A1T4L $4342
+.equ A1T5L $4352
+.equ A1T6L $4362
+.equ A1T7L $4372
+
+.equ A1T0H $4303
+.equ A1T1H $4313
+.equ A1T2H $4323
+.equ A1T3H $4333
+.equ A1T4H $4343
+.equ A1T5H $4353
+.equ A1T6H $4363
+.equ A1T7H $4373
+
+.equ A1B0 $4304
+.equ A1B1 $4314
+.equ A1B2 $4324
+.equ A1B3 $4334
+.equ A1B4 $4344
+.equ A1B5 $4354
+.equ A1B6 $4364
+.equ A1B7 $4374
+
+.equ DAS0L $4305
+.equ DAS1L $4315
+.equ DAS2L $4325
+.equ DAS3L $4335
+.equ DAS4L $4345
+.equ DAS5L $4355
+.equ DAS6L $4365
+.equ DAS7L $4375
+
+.equ DASB0 $4307
+.equ DASB1 $4317
+.equ DASB2 $4327
+.equ DASB3 $4337
+.equ DASB4 $4347
+.equ DASB5 $4357
+.equ DASB6 $4367
+.equ DASB7 $4377
+
+.equ A2A0L $4308
+.equ A2A1L $4318
+.equ A2A2L $4328
+.equ A2A3L $4338
+.equ A2A4L $4348
+.equ A2A5L $4358
+.equ A2A6L $4368
+.equ A2A7L $4378
+
+.equ A2A0H $4309
+.equ A2A1H $4309
+.equ A2A2H $4309
+.equ A2A3H $4309
+.equ A2A4H $4309
+.equ A2A5H $4309
+.equ A2A6H $4309
+.equ A2A7H $4309
+
+.equ NLTR0 $430a
+.equ NLTR1 $431a
+.equ NLTR2 $432a
+.equ NLTR3 $433a
+.equ NLTR4 $434a
+.equ NLTR5 $435a
+.equ NLTR6 $436a
+.equ NLTR7 $437a
