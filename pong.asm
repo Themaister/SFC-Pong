@@ -197,9 +197,60 @@ UpdateBall:
    sta BallPosY
    sta BallSpriteOAM + 1 ; y-coord
 
+   jsr CollitionDetect
 
    pla
    rts
+
+; Check edges first
+CollitionDetect:
+   pha
+
+   lda BallSpeedX
+   bpl _collition_detect_right
+
+   lda BallPosX
+   lsr ; Have to shift right to keep it unsigned :v
+   cmp #$0A
+   bpl _collition_detect_up
+   lda #$02
+   sta BallSpeedX
+   jmp _collition_detect_up
+   
+_collition_detect_right:
+   lda BallPosX
+   lsr
+
+   cmp #$74
+   bmi _collition_detect_up
+   lda #$FE
+   sta BallSpeedX
+
+
+_collition_detect_up:
+   lda BallSpeedY
+   bpl _collition_detect_down
+
+   lda BallPosY
+   lsr
+   cmp #$12
+   bpl _collition_detect_end
+   lda #$02
+   sta BallSpeedY
+   jmp _collition_detect_end
+
+_collition_detect_down:
+   lda BallPosY
+   lsr
+   cmp #$64
+   bmi _collition_detect_end
+   lda #$FE
+   sta BallSpeedY
+
+_collition_detect_end:
+   pla
+   rts
+   
 
 
 ; -- Updates block
