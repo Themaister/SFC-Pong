@@ -22,7 +22,7 @@
    stx A1T0L
 
    ; Set CGRAM address to write to.
-   ldx #\2
+   lda #\2
    sta CGADD
 
    ; Bytes to write

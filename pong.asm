@@ -7,6 +7,11 @@
 .include "header.inc"
 .include "initsnes.asm"
 
+.bank 1
+.section "Data"
+.include "data.inc"
+.ends
+
 .include "macros.asm"
 .include "registers.asm"
 .include "wram.asm"
