@@ -4,11 +4,10 @@ LoadData:
    LoadCGRAM SpritePalette, 128, 32
 
    LoadVRAM BGTiles, $1000, $0040 ; 4 tiles @ 8x8 @ 2bpp
-   LoadVRAM BGTileMap, $0400, $0800 ; 32x32 tiles @ 2 byte each.
-
+   LoadVRAM BGTileMap, $0400, 32 * 28 * 2 ; 32x28 tiles @ 2 byte each.
    LoadVRAM BallSprite, $2000, $0020 ; 8x8 @ 4bpp, index 0
-   LoadVRAM PillarEdgeSprite, $2010, $0010 ; index 1
-   LoadVRAM PillarMiddleSprite, $2020, $0010 ; index 2
+   LoadVRAM PillarEdgeSprite, $2010, $0020
+   LoadVRAM PillarMiddleSprite, $2020, $0020
 
    rts
 
@@ -34,9 +33,6 @@ InitOAM:
 ; Set signed bit in all of high part of OAM.
    lda #$55
 -  sta OAMData, x
-   inx
-   inx
-   inx
    inx
    cpx #$0220
    bne -
@@ -77,6 +73,12 @@ InitVideo:
    ; Turns on screen, full brightness.
    lda #$0F
    sta INIDISP
+
+   ; Enable joypad auto-polling and NMI IRQ
+   stz JOYSER0
+   stz JOYSER1
+   lda #%10000001
+   sta NMITIMEN
 
    plx
    pla

@@ -36,6 +36,7 @@ Start:
    jsr LoadData ; Load all sprites/tiles/tilemaps to VRAM.
 
    jsr InitOAM
+   jsr InitGame
    jsr InitVideo
 
 
@@ -43,7 +44,6 @@ MainLoop:
    wai ; Wait for NMI
    jsr FrameUpdate ; Do per-frame updates.
    jmp MainLoop
-
 
 
 VBlank: ; VBlank routine
@@ -57,7 +57,150 @@ VBlank: ; VBlank routine
 .bank 0
 .section "GameLogic"
 
-FrameUpdate:
+; Set up sprites in HW, and set up initial game state.
+InitGame:
+
+   jsr InitBall
+   jsr InitPillar
+      
+   LoadOAM OAMData, 0, 64
+   LoadOAM OAMData + $0200, $0100, 32
    rts
 
+InitBall:
+   pha
+   lda #$02
+   sta BallSpeedX
+   sta BallSpeedY
+
+   lda #$80
+   sta BallPosX
+   sta BallPosY
+
+   sta BallSpriteOAM + 0 ; x-coord
+   sta BallSpriteOAM + 1 ; y-coord
+   stz BallSpriteOAM + 2 ; sprite index
+   lda #%00110000
+   sta BallSpriteOAM + 3 ; Prio 3
+
+   lda #%01010100
+   sta OAMData + $0200 ; Don't hide sprite 0
+
+   pla
+   rts
+
+InitPillar:
+   pha
+   phx
+
+; Set coordinates for edge sprites.
+   lda #$50
+   sta Pillar1Pos
+   sta Pillar2Pos
+   sta PillarEdgeSpriteOAM + 1 ; top y-coord of p1
+   sta PillarEdgeSpriteOAM + 5 ; top y-coord of p2
+
+   lda #($50 + 5 * 8)
+   sta PillarEdgeSpriteOAM + 9 ; bottom y-coord of p1
+   sta PillarEdgeSpriteOAM + 13 ; bottom y-coord of p2
+
+   lda #$30
+   sta PillarEdgeSpriteOAM ; top x-coord of p1
+   sta PillarEdgeSpriteOAM + 8 ; bottom x-coord of p1
+   lda #$C0
+   sta PillarEdgeSpriteOAM + 4 ; top x-coord of p2
+   sta PillarEdgeSpriteOAM + 12 ; bottom x-coord of p2
+
+; Set coordinates for middle sprites.
+; y-coordinates
+   lda #($50 + 8)
+   ldx #$0000
+-  sta PillarSpriteOAM + 1, x ; y-coord p1
+   sta PillarSpriteOAM + 17, x ; y-coord p2
+   inx
+   inx
+   inx
+   inx
+   clc
+   adc #$08
+   cpx #$0010
+   bne -
+
+; x-coordinates
+   ldx #$0000
+-  lda #$30
+   sta PillarSpriteOAM, x ; x-coord p1
+   lda #$C0
+   sta PillarSpriteOAM + 16, x ; x-coord p2
+   inx
+   inx
+   inx
+   inx
+   cpx #$0010
+   bne -
+
+   stz OAMData + $0200 + 1
+   stz OAMData + $0200 + 2 ; Show all Pillar sprites
+   stz OAMData + $0200 + 3
+
+; Set middle sprites
+   ldx #$0000
+-  lda #$02 ; Sprite 1
+   sta PillarSpriteOAM + 2, x
+   lda #%00110000 ; Prio 3
+   sta PillarSpriteOAM + 3, x
+   inx
+   inx
+   inx
+   inx
+   cpx #$0020
+   bne -
+
+; Set edge sprites with flip, etc.
+   lda #$01
+   sta PillarEdgeSpriteOAM + 2
+   sta PillarEdgeSpriteOAM + 6
+   sta PillarEdgeSpriteOAM + 10
+   sta PillarEdgeSpriteOAM + 14
+   lda #%00110000
+   sta PillarEdgeSpriteOAM + 3
+   sta PillarEdgeSpriteOAM + 7
+   lda #%10110000 ; vertical flip
+   sta PillarEdgeSpriteOAM + 11
+   sta PillarEdgeSpriteOAM + 15
+   
+
+
+   plx
+   pla
+   rts
+
+
+FrameUpdate:
+   pha
+   
+   pla
+   jsr UpdateBall
+   rts
+
+
+UpdateBall:
+   pha
+
+   lda BallPosX
+   clc
+   adc BallSpeedX
+   sta BallPosX
+   sta BallSpriteOAM + 0 ; x-coord
+
+   lda BallPosY
+   clc
+   adc BallSpeedY
+   sta BallPosY
+   sta BallSpriteOAM + 1 ; y-coord
+
+   LoadOAM OAMData, 0, 2 ; Update coordinates in OAM.
+
+   pla
+   rts
 .ends
