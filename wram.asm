@@ -13,8 +13,6 @@
 .equ PillarSpriteOAM $1020
 
 ; Game state
-.equ Pillar1Pos $0100
-.equ Pillar2Pos $0101
 .equ BallPosX $0102
 .equ BallPosY $0103
 .equ BallSpeedX $0104

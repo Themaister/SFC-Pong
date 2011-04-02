@@ -95,8 +95,6 @@ InitPillar:
 
 ; Set coordinates for edge sprites.
    lda #$50
-   sta Pillar1Pos
-   sta Pillar2Pos
    sta PillarEdgeSpriteOAM + 1 ; top y-coord of p1
    sta PillarEdgeSpriteOAM + 5 ; top y-coord of p2
 
@@ -177,10 +175,10 @@ InitPillar:
 
 
 FrameUpdate:
-   pha
-   
-   pla
    jsr UpdateBall
+   jsr UpdatePillar
+   LoadOAM OAMData, 0, $0040 ; Update coordinates in OAM.
+
    rts
 
 
@@ -199,8 +197,127 @@ UpdateBall:
    sta BallPosY
    sta BallSpriteOAM + 1 ; y-coord
 
-   LoadOAM OAMData, 0, 2 ; Update coordinates in OAM.
 
    pla
    rts
+
+
+; -- Updates block
+; -- Adds in A, block in X
+UpdateBlock:
+   phy
+   ldy #$0000
+-  pha 
+   clc
+   adc $01, x
+   sta $01, x
+   pla
+
+   iny
+   iny
+   iny
+   iny
+   inx
+   inx
+   inx
+   inx
+
+   cpy #$0010
+   bne -
+
+   ply
+   rts
+
+UpdateEdgeBlock:
+   pha
+   clc
+   adc $01, x
+   sta $01, x
+   pla
+
+   pha
+   clc
+   adc $09, x
+   sta $09, x
+   pla
+   rts
+
+UpdatePillar:
+   pha
+   phx
+
+   lda Joypad1Hi
+   and #$08 ; Up
+   beq _skip_p1_up
+
+   lda PillarEdgeSpriteOAM + 1 ; Load y-coord of p1 upper edge
+   cmp #$22
+   bmi _skip_p1_up
+
+   ldx #PillarEdgeSpriteOAM
+   lda #$FE
+   jsr UpdateEdgeBlock
+
+   ldx #PillarSpriteOAM
+   lda #$FE
+   jsr UpdateBlock
+
+_skip_p1_up:
+   lda Joypad1Hi
+   and #$04 ; Down
+   beq _skip_p1_down
+
+   lda PillarEdgeSpriteOAM + 9 ; Load y-coord of p1 lower edge
+   cmp #$C8
+   bpl _skip_p1_down
+
+   ldx #PillarEdgeSpriteOAM
+   lda #$02
+   jsr UpdateEdgeBlock
+
+   ldx #PillarSpriteOAM
+   lda #$02
+   jsr UpdateBlock
+
+_skip_p1_down:
+   lda Joypad2Hi
+   and #$08 ; Up
+   beq _skip_p2_up
+
+   lda PillarEdgeSpriteOAM + 5 ; Load y-coord of p2 upper edge
+   cmp #$22
+   bmi _skip_p2_up
+
+   ldx #(PillarEdgeSpriteOAM + 4)
+   lda #$FE
+   jsr UpdateEdgeBlock
+
+   ldx #PillarSpriteOAM + 16
+   lda #$FE
+   jsr UpdateBlock
+
+_skip_p2_up:
+   lda Joypad2Hi
+   and #$04 ; Down
+   beq _skip_p2_down
+
+   lda PillarEdgeSpriteOAM + 13 ; Load y-coord of p2 lower edge
+   cmp #$C8
+   bpl _skip_p2_down
+
+   ldx #(PillarEdgeSpriteOAM + 4)
+   lda #$02
+   jsr UpdateEdgeBlock
+
+   ldx #PillarSpriteOAM + 16
+   lda #$02
+   jsr UpdateBlock
+
+_skip_p2_down:
+
+   plx
+   pla
+   rts
+
+
 .ends
