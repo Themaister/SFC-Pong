@@ -240,27 +240,15 @@ CheckScore:
    lda BallPosX
    cmp #$10
    bcs +
-   lda #$01
    inc Player2Score
-   bra ++
-+  lda #$00
-++ pha
+   bra _check_score_is_true
 
-   lda BallPosX
++  lda BallPosX
    cmp #$F0
-   bcs +
-   lda #$00
-   bra ++
-+  lda #$01
+   bcc _check_score_end
    inc Player1Score
-++ clc
-   adc 1, s
-   cmp #$01
-   bcs +
-   pla
-   bra _check_score_end
-+  pla
 
+_check_score_is_true:
 ; Set some initial speed/coord
    lda #$60
    clc
