@@ -103,3 +103,8 @@
    plx
    pla
 .endm
+
+.macro negate_acc
+   eor #$FF
+   inc A
+.endm

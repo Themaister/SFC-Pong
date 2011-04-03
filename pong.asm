@@ -62,8 +62,9 @@ InitGame:
 
    jsr InitBall
    jsr InitPillar
+   jsr InitScore
       
-   LoadOAM OAMData, 0, 64
+   LoadOAM OAMData, 0, 128
    LoadOAM OAMData + $0200, $0100, 32
    rts
 
@@ -85,6 +86,35 @@ InitBall:
 
    lda #%01010100
    sta OAMData + $0200 ; Don't hide sprite 0
+
+   pla
+   rts
+
+InitScore:
+   pha
+
+   stz Player1Score
+   stz Player2Score
+
+   lda #$05
+   sta Player1ScoreOAM + 1
+   sta Player2ScoreOAM + 1
+
+   lda #$30
+   sta Player1ScoreOAM
+   lda #$70
+   sta Player2ScoreOAM
+
+   lda #$10
+   sta Player1ScoreOAM + 2
+   sta Player2ScoreOAM + 2
+
+   lda #%00110000
+   sta Player1ScoreOAM + 3
+   sta Player2ScoreOAM + 3
+
+   lda #%01010000
+   sta OAMData + $0200 + 4
 
    pla
    rts
@@ -175,9 +205,9 @@ InitPillar:
 
 
 FrameUpdate:
+   LoadOAM OAMData, 0, 128 ; Update coordinates in OAM ASAP. We might have to do expensive calculation after this.
    jsr UpdateBall
    jsr UpdatePillar
-   LoadOAM OAMData, 0, $0040 ; Update coordinates in OAM.
 
    rts
 
@@ -198,7 +228,60 @@ UpdateBall:
    sta BallSpriteOAM + 1 ; y-coord
 
    jsr CollitionDetect
+   jsr CheckScore
 
+   pla
+   rts
+
+CheckScore:
+   pha
+
+; Wtf is this shit... if (BallPosX < 0x10 || BallPosX >= 0xF0) { do_shit(); }
+   lda BallPosX
+   cmp #$10
+   bcs +
+   lda #$01
+   inc Player2Score
+   bra ++
++  lda #$00
+++ pha
+
+   lda BallPosX
+   cmp #$F0
+   bcs +
+   lda #$00
+   bra ++
++  lda #$01
+   inc Player1Score
+++ clc
+   adc 1, s
+   cmp #$01
+   bcs +
+   pla
+   bra _check_score_end
++  pla
+
+   lda #$60
+   sta BallPosX
+   sta BallPosY
+   lda #$02
+   sta BallSpeedX
+   lda #$FD
+   sta BallSpeedY
+
+   lda Player1Score
+   and #$0F
+   clc
+   adc #$10 ; Sprite index for score.
+   sta Player1ScoreOAM + 2
+
+   lda Player2Score
+   and #$0F
+   clc
+   adc #$10 ; Sprite index for score.
+   sta Player2ScoreOAM + 2
+
+_check_score_end:
    pla
    rts
 
@@ -206,13 +289,25 @@ UpdateBall:
 CollitionDetect:
    pha
 
+   ; Check to see if we're on the "scoring" edge. 
+   ; If so, don't perform collition detection at all.
+   lda BallPosY
+   cmp #(16 * 8)
+   bcs _collition_detect_left
+   lda BallPosY
+   cmp #(12 * 8)
+   bcc _collition_detect_left
+   bra _collition_detect_end
+
+_collition_detect_left:
    lda BallSpeedX
    bpl _collition_detect_right
 
    lda BallPosX
    cmp #$18
    bcs _collition_detect_up
-   lda #$02
+   lda BallSpeedX
+   negate_acc
    sta BallSpeedX
    jmp _collition_detect_up
    
@@ -220,7 +315,8 @@ _collition_detect_right:
    lda BallPosX
    cmp #$E8
    bcc _collition_detect_up
-   lda #$FE
+   lda BallSpeedX
+   negate_acc
    sta BallSpeedX
 
 
@@ -231,21 +327,100 @@ _collition_detect_up:
    lda BallPosY
    cmp #$24
    bcs _collition_detect_end
-   lda #$02
+   lda BallSpeedY
+   negate_acc
    sta BallSpeedY
-   jmp _collition_detect_end
+   bra _collition_detect_end
 
 _collition_detect_down:
    lda BallPosY
    cmp #$C8
    bcc _collition_detect_end
-   lda #$FE
+   lda BallSpeedY
+   negate_acc
    sta BallSpeedY
 
 _collition_detect_end:
+   jsr CollitionDetectPillar
+
    pla
    rts
    
+
+; This is HELL :D
+CollitionDetectPillar:
+   pha
+
+;_collition_detect_pillar_l:
+   lda BallPosY
+   cmp PillarEdgeSpriteOAM + 1 ; Upper coord of P1
+   bcc _collition_detect_pillar_r
+
+   lda BallPosY
+   cmp PillarEdgeSpriteOAM + 9
+   bcs _collition_detect_pillar_r
+
+   lda BallSpeedX
+   bpl +
+   lda BallPosX
+   cmp #($30 + 9)
+   bcs _collition_detect_pillar_r
+   cmp #($30 - 0)
+   bcc _collition_detect_pillar_r
+
+   lda BallSpeedX
+   negate_acc
+   sta BallSpeedX
+   bra _collition_detect_pillar_end
+
++  lda BallPosX
+   cmp #($30 - 9)
+   bcc _collition_detect_pillar_r
+   cmp #($30 + 0)
+   bcs _collition_detect_pillar_r
+
+   lda BallSpeedX
+   negate_acc
+   sta BallSpeedX
+   bra _collition_detect_pillar_end
+
+
+_collition_detect_pillar_r:
+
+   lda BallPosY
+   cmp PillarEdgeSpriteOAM + 5 ; Upper coord of P1
+   bcc _collition_detect_pillar_end
+
+   lda BallPosY
+   cmp PillarEdgeSpriteOAM + 13
+   bcs _collition_detect_pillar_end
+
+   lda BallSpeedX
+   bpl +
+   lda BallPosX
+   cmp #($C0 + 9)
+   bcs _collition_detect_pillar_end
+   cmp #($C0 - 0)
+   bcc _collition_detect_pillar_end
+
+   lda BallSpeedX
+   negate_acc
+   sta BallSpeedX
+   bra _collition_detect_pillar_end
+
++  lda BallPosX
+   cmp #($C0 - 9)
+   bcc _collition_detect_pillar_end
+   cmp #($C0 + 0)
+   bcs _collition_detect_pillar_end
+
+   lda BallSpeedX
+   negate_acc
+   sta BallSpeedX
+
+_collition_detect_pillar_end:
+   pla
+   rts
 
 
 ; -- Updates block
