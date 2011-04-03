@@ -100,9 +100,9 @@ InitScore:
    sta Player1ScoreOAM + 1
    sta Player2ScoreOAM + 1
 
-   lda #$30
+   lda #$40
    sta Player1ScoreOAM
-   lda #$70
+   lda #$B0
    sta Player2ScoreOAM
 
    lda #$10
@@ -261,22 +261,58 @@ CheckScore:
    bra _check_score_end
 +  pla
 
+; Set some initial speed/coord
    lda #$60
+   clc
+   adc Player1Score
    sta BallPosX
+   clc
+   adc Player2Score
    sta BallPosY
-   lda #$02
+   lda #$04
+   clc
+   adc Player1Score
+   lsr
    sta BallSpeedX
-   lda #$FD
+   lda #$05
+   adc Player2Score
+   lsr
    sta BallSpeedY
 
+; Check for Advantage/Game, etc.
    lda Player1Score
-   and #$0F
+   cmp #$03
+   bcc +
+   lda Player2Score
+   cmp #$02
+   bcs ++
+   lda #$04
+   sta Player1Score
+   bra _skip_score_calculation
+++ lda #$02
+   sta Player2Score
+
++  lda Player2Score
+   cmp #$03
+   bcc _skip_score_calculation
+   lda Player1Score
+   cmp #$02
+   bcs ++
+   lda #$04
+   sta Player2Score
+   bra _skip_score_calculation
+++ lda #$02
+   sta Player1Score
+
+_skip_score_calculation:
+   lda Player1Score
+   and #$07
    clc
    adc #$10 ; Sprite index for score.
    sta Player1ScoreOAM + 2
 
    lda Player2Score
-   and #$0F
+   and #$07
    clc
    adc #$10 ; Sprite index for score.
    sta Player2ScoreOAM + 2
