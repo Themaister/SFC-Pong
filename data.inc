@@ -190,3 +190,5 @@ ScoreSprite:
    .dw $C3C3, $C3C3, $C3C3, $DBDB, $DBDB, $DBDB, $6666, $3C3C ; W
    .dw $0000, $0000, $0000, $0000, $0000, $0000, $0000, $0000
 
+TestSPCData:
+   .dw $FFFF, $EEEE, $DDDD, $CCCC, $BBBB, $AAAA, $9999, $8888

@@ -27,11 +27,18 @@
 .ends
 
 .bank 0
+.section "SPC_700"
+.include "spc_700.asm"
+.ends
+
+.bank 0
 .section "Main"
 
 ; Entry point
 Start:
    InitSNES ; Init SNES to a known state.
+
+   jsr InitSPC
 
    jsr LoadData ; Load all sprites/tiles/tilemaps to VRAM.
 
