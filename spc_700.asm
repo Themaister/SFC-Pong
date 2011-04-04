@@ -76,14 +76,14 @@
 .endm
 
 TransferBlockSPC_loop:
-   pha
+   xba
 
 ; Load data from RAM.
    lda 0, y
    iny
    sta APUIO1 
 
-   pla
+   xba
    sta APUIO0
    WaitAPUIO0
    inc A
