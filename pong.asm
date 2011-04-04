@@ -31,6 +31,8 @@
 .include "spc_700.asm"
 .ends
 
+.include "spc_file.inc"
+
 .bank 0
 .section "Main"
 

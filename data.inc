@@ -192,3 +192,4 @@ ScoreSprite:
 
 TestSPCData:
    .dw $FFFF, $EEEE, $DDDD, $CCCC, $BBBB, $AAAA, $9999, $8888
+   .dw $0202, $0202, $0202, $0202, $0202, $0202, $0202, $0202
