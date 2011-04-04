@@ -2,6 +2,8 @@
 SaveJoypadData:
    pha
 
+   lda RDNMI
+
    ; Busy wait till we can read from joypad.
 -  lda HVBJOY
    and #$01

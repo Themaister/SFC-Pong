@@ -38,6 +38,9 @@
 Start:
    InitSNES ; Init SNES to a known state.
 
+   stz NMITIMEN
+   sei
+
    jsr InitSPC
 
    jsr LoadData ; Load all sprites/tiles/tilemaps to VRAM.
@@ -46,6 +49,7 @@ Start:
    jsr InitGame
    jsr InitVideo
 
+   cli
 
 MainLoop:
    wai ; Wait for NMI
@@ -67,12 +71,14 @@ VBlank: ; VBlank routine
 ; Set up sprites in HW, and set up initial game state.
 InitGame:
 
+
    jsr InitBall
    jsr InitPillar
    jsr InitScore
       
    LoadOAM OAMData, 0, 128
    LoadOAM OAMData + $0200, $0100, 32
+
    rts
 
 InitBall:

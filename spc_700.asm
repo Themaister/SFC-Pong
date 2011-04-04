@@ -112,6 +112,8 @@ InitSPC:
    pha
    phy
 
+; We should perhaps make sure the data is in WRAM first, but hey. 
+; It seems to work on bsnes accuracy to load straight from ROM :) Must be good! :D
    TransferBlockSPC :TestSPCData, TestSPCData, $2000, 16
 
    ply
