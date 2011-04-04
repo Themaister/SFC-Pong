@@ -18,13 +18,7 @@
    php
    sei
 
-; This will only work when IPL-rom is active.
-   lda #$aa
-   WaitAPUIO0 ; Makes sure SPC is alive.
-   lda #$bb
-   WaitAPUIO1
-
-   ldx #ADDR
+   ldx.w #\1
    stx APUIO2
 
    stz APUIO1 ; Jump
@@ -46,15 +40,21 @@
    php
    sei ; Disable IRQ. Time sensitive stuff this ...
 
-; Change bank.
-   phb
-   lda #\1
+   lda $00
    pha
-   plb
+   lda $01
+   pha
+   lda $02
+   pha
+
+   lda #\1
+   sta $02
+   ldx.w #\2
+   stx $00
 
 ; Save long address.
 
-   ldx #\3
+   ldx.w #\3
    stx APUIO2
    lda #$01
    sta APUIO1
@@ -63,12 +63,18 @@
    WaitAPUIO0
 
    lda #$00
-   ldx #\4
-   ldy #\2
+   ldx.w #\4
+   ldy #$0000
    jsr TransferBlockSPC_loop
 
+   pla
+   sta $02
+   pla
+   sta $01
+   pla
+   sta $00
+
 ; Pull bank back.
-   plb
    plp
    ply
    plx
@@ -79,7 +85,7 @@ TransferBlockSPC_loop:
    xba
 
 ; Load data from RAM.
-   lda 0, y
+   lda [$00], y
    iny
    sta APUIO1 
 
@@ -110,19 +116,29 @@ TransferBlockSPC_loop:
 
    rts
 
+StallInitSPC:
+   lda #$aa
+   WaitAPUIO0
+   lda #$bb
+   WaitAPUIO1
+   rts
 
 ; Loads an SPC file into SMP/DSP.
 InitSPC:
    pha
    phx
 
+   jsr StallInitSPC
+
 ; We should perhaps make sure the data is in WRAM first, but hey. 
 ; It seems to work on bsnes accuracy to load straight from ROM :) Must be good! :D
    TransferBlockSPC :TestSPCData, TestSPCData, $2000, 32
+   TransferBlockSPC :TestSPCData, TestSPCData, $2020, 32
+   TransferBlockSPC :SPC_RAM2, SPC_RAM2 + $100, $2040, 32 ; This works, wth?!?! :(
 
-   jsr SendDSPState
-   jsr SendSPCRAM
-   jsr SendSPCInitCode
+   jsr SendSPCRAM ; Why the fuck does this not work? :( 
+   jsr SendSPCInitCode ; This does not seem to work.
+   jsr SendDSPState ; Not sure about this ...
    SPCJump $ffa0 ; Make SPC jump to our ASM routine.
 
    plx
@@ -144,6 +160,24 @@ _dsp_load_loop:
    inx
    cpx #$0080
    bne _dsp_load_loop
+
+   rts
+
+
+; Load the whole 64k rom
+SendSPCRAM:
+   ldx #$7fff
+-  
+   lda.l SPC_RAM1, x
+   sta.l $7f0000, x
+   lda.l SPC_RAM2, x
+   sta.l $7f8000, x
+   dex
+   bne -
+
+   TransferBlockSPC $7f, $0002, $0002, $ffbe 
+   ; We cannot transfer the first 2 bytes since they're used by IPL. 
+   ; We will restore these later in custom ASM routine.
 
    rts
 
@@ -219,9 +253,9 @@ SendSPCInitCode:
 ; Finally, jump to saved PC.
    lda #$5f ; jmp addr
    sta.l $7f0013
-   rep #$30 ; Can only access long mode with A apparently...
+   rep #$20 ; Can only access long mode with A apparently...
    lda.l SPC_PC
-   sep #$30
+   sep #$20
    sta.l $7f0014
    xba
    sta.l $7f0015

@@ -27,7 +27,7 @@
 .ends
 
 .bank 0
-.section "SPC_700"
+.section "SPC"
 .include "spc_700.asm"
 .ends
 
