@@ -47,12 +47,12 @@
    lda $02
    pha
 
+; Save long address.
    lda #\1
    sta $02
    ldx.w #\2
    stx $00
 
-; Save long address.
 
    ldx.w #\3
    stx APUIO2
@@ -98,7 +98,8 @@ TransferBlockSPC_loop:
    bne TransferBlockSPC_loop
 
 ; Use an index larger than expected to have the SPC drop out. If 0, increase once more.
-   inc A
+   clc
+   adc #$02
    bne +
    inc A
 +
@@ -107,7 +108,7 @@ TransferBlockSPC_loop:
    inc A
 +
 
-   ldx #$ffcf ; Make the SPC drop back to $ffc9 for more reading ...
+   ldx #$ffcf ; Make the SPC drop back to $ffcf for more reading ...
    stx APUIO2
    stz APUIO1
    sta APUIO0
