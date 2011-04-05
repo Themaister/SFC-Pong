@@ -1,9 +1,11 @@
+; Usage WaitAPUIO0 WAIT_COND
 .macro WaitAPUIO0
 -
    cmp APUIO0
    bne -
 .endm
 
+; Usage WaitAPUIO1 WAIT_COND
 .macro WaitAPUIO1
 -
    cmp APUIO1
@@ -25,7 +27,7 @@
 
    lda #$cc   ; Perform action.
    sta APUIO0
-   WaitAPUIO0
+   ;WaitAPUIO0
 
    plp
    plx
@@ -40,6 +42,7 @@
    php
    sei ; Disable IRQ. Time sensitive stuff this ...
 
+; Save the memory we use to stack.
    lda $00
    pha
    lda $01
@@ -52,7 +55,6 @@
    sta $02
    ldx.w #\2
    stx $00
-
 
    ldx.w #\3
    stx APUIO2
@@ -82,17 +84,15 @@
 .endm
 
 TransferBlockSPC_loop:
-   xba
-
-; Load data from RAM.
+; Load data from RAM. Long addressing ftw.
    lda [$00], y
-   iny
    sta APUIO1 
 
-   xba
+   tya ; Transfer index.
+
+   iny
    sta APUIO0
    WaitAPUIO0
-   inc A
 
    dex
    bne TransferBlockSPC_loop
@@ -137,9 +137,9 @@ InitSPC:
    TransferBlockSPC :TestSPCData, TestSPCData, $2020, 32
    TransferBlockSPC :SPC_RAM2, SPC_RAM2 + $100, $2040, 32 ; This works, wth?!?! :(
 
-   jsr SendSPCRAM ; Why the fuck does this not work? :( 
-   jsr SendSPCInitCode ; This does not seem to work.
-   jsr SendDSPState ; Not sure about this ...
+   ;jsr SendSPCRAM ; Why the fuck does this not work? :( 
+   jsr SendSPCInitCode ; This does seem to work now.
+   ;jsr SendDSPState ; This breaks when transfering index $6c for some reason.
    SPCJump $ffa0 ; Make SPC jump to our ASM routine.
 
    plx
