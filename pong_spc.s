@@ -62,10 +62,40 @@
 .equ KOFF6, $6f
 .equ KOFF7, $7f
 
+.equ TIMER_CTRL $F1
+.equ TIMER0 $FA
+.equ TIMER1 $FB
+.equ TIMER2 $FC
+.equ TIMER_READ0 $FD
+.equ TIMER_READ1 $FE
+.equ TIMER_READ2 $FF
+
 .macro wdsp
    mov a, #\1
    mov y, #\2
    movw DSP_R, ya
+.endm
+
+; Wait for a certain amount of MS. 1ms granularity. Max allowed: 255ms.
+.macro WaitMS
+   push a
+   push y
+   push x
+
+   mov y, #\1
+   mov a, #$00
+
+   mov TIMER2, #$40
+   mov TIMER_CTRL, #$04
+-
+   mov a, TIMER_READ2
+   beq -
+   dec y
+   bne -
+
+   pop x
+   pop y
+   pop a
 .endm
 
 .memorymap
@@ -89,8 +119,8 @@ Start:
    wdsp P_L0, $00
    wdsp P_H0, $01
    wdsp SRCN0, 0
-   wdsp ADSR0_1, $%11000011
-   wdsp ADSR0_2, $%00101111
+   wdsp ADSR0_1, %11011110
+   wdsp ADSR0_2, %01111110
    wdsp GAIN0, $7f
 
    wdsp VOL_L1, $7f
@@ -98,8 +128,8 @@ Start:
    wdsp P_L1, $40
    wdsp P_H1, $01
    wdsp SRCN1, 0
-   wdsp ADSR1_1, $%11000011
-   wdsp ADSR1_2, $%00101111
+   wdsp ADSR1_1, %11011110
+   wdsp ADSR1_2, %01111110
    wdsp GAIN1, $7f
 
    wdsp VOL_L2, $7f
@@ -107,8 +137,8 @@ Start:
    wdsp P_L2, $80
    wdsp P_H2, $01
    wdsp SRCN2, 0
-   wdsp ADSR2_1, $%11000011
-   wdsp ADSR2_2, $%00101111
+   wdsp ADSR2_1, %11011110
+   wdsp ADSR2_2, %01111110
    wdsp GAIN2, $7f
 
    wdsp NON, 0
@@ -118,10 +148,29 @@ Start:
    wdsp EVOL_L, 0
    wdsp EVOL_R, 0
 
-   wdsp KON, 7
 
 _forever:
-   bra _forever
+   wdsp KON, 7
+   WaitMS 200
+   
+   wdsp P_L0, $00
+   wdsp P_H0, $02
+   wdsp P_L1, $80
+   wdsp P_H1, $02
+   wdsp P_L2, $00
+   wdsp P_H2, $03
+
+   wdsp KON, 7
+   WaitMS 200
+
+   wdsp P_L0, $00
+   wdsp P_H0, $01
+   wdsp P_L1, $40
+   wdsp P_H1, $01
+   wdsp P_L2, $80
+   wdsp P_H2, $01
+
+   jmp !_forever
 
 .orga $f100
 sample_directory:
