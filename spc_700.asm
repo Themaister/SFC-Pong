@@ -267,3 +267,22 @@ SendSPCInitCode:
    TransferBlockSPC $7f, $0000, $ffa0, $0016 ; Transfer our hand crafted asm-routine to SPC ... :D
 
    rts
+
+
+; Todo: Extend to play many different sounds.
+SPCPlaySound:
+   pha
+
+   inc SPCCounter
+   lda SPCCounter
+   sta APUIO1 ; Send popcorn
+   xba
+
+   lda APUIO0
+   sta APUIO0
+
+   xba
+   WaitAPUIO1 ; Wait for handshake.
+
+   pla
+   rts

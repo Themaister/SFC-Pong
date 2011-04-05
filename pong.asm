@@ -346,6 +346,7 @@ _collition_detect_left:
    cmp #$18
    bcs _collition_detect_up
    lda BallSpeedX
+   jsr SPCPlaySound
    negate_acc
    sta BallSpeedX
    jmp _collition_detect_up
@@ -355,6 +356,7 @@ _collition_detect_right:
    cmp #$E8
    bcc _collition_detect_up
    lda BallSpeedX
+   jsr SPCPlaySound
    negate_acc
    sta BallSpeedX
 
@@ -367,6 +369,7 @@ _collition_detect_up:
    cmp #$24
    bcs _collition_detect_end
    lda BallSpeedY
+   jsr SPCPlaySound
    negate_acc
    sta BallSpeedY
    bra _collition_detect_end
@@ -376,6 +379,7 @@ _collition_detect_down:
    cmp #$C8
    bcc _collition_detect_end
    lda BallSpeedY
+   jsr SPCPlaySound
    negate_acc
    sta BallSpeedY
 
@@ -408,6 +412,7 @@ CollitionDetectPillar:
    bcc _collition_detect_pillar_r
 
    lda BallSpeedX
+   jsr SPCPlaySound
    negate_acc
    sta BallSpeedX
    bra _collition_detect_pillar_end
@@ -419,6 +424,7 @@ CollitionDetectPillar:
    bcs _collition_detect_pillar_r
 
    lda BallSpeedX
+   jsr SPCPlaySound
    negate_acc
    sta BallSpeedX
    bra _collition_detect_pillar_end
@@ -443,6 +449,7 @@ _collition_detect_pillar_r:
    bcc _collition_detect_pillar_end
 
    lda BallSpeedX
+   jsr SPCPlaySound
    negate_acc
    sta BallSpeedX
    bra _collition_detect_pillar_end
@@ -454,6 +461,7 @@ _collition_detect_pillar_r:
    bcs _collition_detect_pillar_end
 
    lda BallSpeedX
+   jsr SPCPlaySound
    negate_acc
    sta BallSpeedX
 

@@ -22,3 +22,5 @@
 
 .equ Player1Score $0106
 .equ Player2Score $0107
+
+.equ SPCCounter $0200

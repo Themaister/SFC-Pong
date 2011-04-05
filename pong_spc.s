@@ -1,7 +1,11 @@
-; Play a sine wave with SPC700. :D
 
 .equ DSP_R $f2
 .equ DSP_D $f3
+
+.equ IO0 $f4
+.equ IO1 $f5
+.equ IO2 $f6
+.equ IO3 $f7
 
 .equ VOL_L0 $00
 .equ VOL_R0 $01
@@ -149,26 +153,20 @@ Start:
    wdsp EVOL_R, 0
 
 
+   mov x, #$00
+   mov IO0, x
+
 _forever:
-   wdsp KON, 7
-   WaitMS 200
-   
-   wdsp P_L0, $00
-   wdsp P_H0, $02
-   wdsp P_L1, $80
-   wdsp P_H1, $02
-   wdsp P_L2, $00
-   wdsp P_H2, $03
 
-   wdsp KON, 7
-   WaitMS 200
+-
+   cmp x, IO0 ; Wait till it's echoed back.
+   bne -
+   inc x
+   mov IO0, x ; Set up new popcorn
+   mov a, IO1
+   mov IO1, a ; Echo it back to CPU.
 
-   wdsp P_L0, $00
-   wdsp P_H0, $01
-   wdsp P_L1, $40
-   wdsp P_H1, $01
-   wdsp P_L2, $80
-   wdsp P_H2, $01
+   wdsp KON, 7 ; Play sound effect.
 
    jmp !_forever
 
