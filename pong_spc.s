@@ -162,9 +162,6 @@ Start:
    wdsp EFB, 16
 
    wdsp COEF0, $7f
-   wdsp COEF2, $3f
-   wdsp COEF4, $2f
-   wdsp COEF6, $1f
 
    wdsp MVOL_L, $7f
    wdsp MVOL_R, $7f
@@ -192,9 +189,20 @@ _forever:
 
 .orga $f400
 sample_directory:
-   .dw square_wave, square_wave
-
+   .dw tennis, tennis + 9 ; Tennis sound
+   .dw square_wave, square_wave ; Square wave
+   .dw triangle_wave, triangle_wave ; Triangle wave
 
 .orga $f500
 square_wave:
-   .db $b3, $ff, $ff, $ff, $ff, $00, $00, $00, $00
+   .db $c3, $ff, $ff, $ff, $ff, $00, $00, $00, $00
+
+tennis:
+   .dw $c2, $89, $ab, $cd, $ef, $01, $23, $45, $67
+   .dw $c3, $00, $00, $00, $00, $00, $00, $00, $00
+
+triangle_wave:
+   .dw $c2, $89, $ab, $cd, $ef, $01, $23, $45, $67
+   .dw $c3, $76, $54, $32, $10, $fe, $dc, $ba, $98
+
+
