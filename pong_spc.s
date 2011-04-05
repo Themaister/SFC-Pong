@@ -57,14 +57,14 @@
 .equ ESA $6d
 .equ EDL $7d
 
-.equ KOFF0, $0f
-.equ KOFF1, $1f
-.equ KOFF2, $2f
-.equ KOFF3, $3f
-.equ KOFF4, $4f
-.equ KOFF5, $5f
-.equ KOFF6, $6f
-.equ KOFF7, $7f
+.equ COEF0, $0f
+.equ COEF1, $1f
+.equ COEF2, $2f
+.equ COEF3, $3f
+.equ COEF4, $4f
+.equ COEF5, $5f
+.equ COEF6, $6f
+.equ COEF7, $7f
 
 .equ TIMER_CTRL $F1
 .equ TIMER0 $FA
@@ -102,6 +102,16 @@
    pop a
 .endm
 
+.macro Stall
+   push a
+   mov a, #\1
+--
+   dec a
+   bne --
+
+   pop a
+.endm
+
 .memorymap
    defaultslot 0
    slot 0 start $f000 size $0800
@@ -113,7 +123,7 @@
 .orga $f000
 
 Start:
-   wdsp FLG, $20
+   wdsp FLG, $00
    wdsp KON, 0
    wdsp DIR, >sample_directory
 
@@ -121,7 +131,7 @@ Start:
    wdsp VOL_L0, $7f
    wdsp VOL_R0, $7f
    wdsp P_L0, $00
-   wdsp P_H0, $01
+   wdsp P_H0, $02
    wdsp SRCN0, 0
    wdsp ADSR0_1, %11011110
    wdsp ADSR0_2, %01111110
@@ -129,8 +139,8 @@ Start:
 
    wdsp VOL_L1, $7f
    wdsp VOL_R1, $7f
-   wdsp P_L1, $40
-   wdsp P_H1, $01
+   wdsp P_L1, $80
+   wdsp P_H1, $02
    wdsp SRCN1, 0
    wdsp ADSR1_1, %11011110
    wdsp ADSR1_2, %01111110
@@ -138,19 +148,29 @@ Start:
 
    wdsp VOL_L2, $7f
    wdsp VOL_R2, $7f
-   wdsp P_L2, $80
-   wdsp P_H2, $01
+   wdsp P_L2, $00
+   wdsp P_H2, $03
    wdsp SRCN2, 0
    wdsp ADSR2_1, %11011110
    wdsp ADSR2_2, %01111110
    wdsp GAIN2, $7f
 
+   wdsp ESA, 1
+   wdsp EDL, 15
    wdsp NON, 0
-   wdsp EON, 0
+   wdsp EON, 7
+   wdsp EFB, 16
+
+   wdsp COEF0, $7f
+   wdsp COEF2, $3f
+   wdsp COEF4, $2f
+   wdsp COEF6, $1f
+
    wdsp MVOL_L, $7f
    wdsp MVOL_R, $7f
-   wdsp EVOL_L, 0
-   wdsp EVOL_R, 0
+   wdsp EVOL_L, $40
+   wdsp EVOL_R, $40
+
 
 
    mov x, #$00
@@ -170,11 +190,11 @@ _forever:
 
    jmp !_forever
 
-.orga $f100
+.orga $f400
 sample_directory:
    .dw square_wave, square_wave
 
 
-.orga $f200
+.orga $f500
 square_wave:
    .db $b3, $ff, $ff, $ff, $ff, $00, $00, $00, $00
