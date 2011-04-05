@@ -133,14 +133,17 @@ InitSPC:
 
 ; We should perhaps make sure the data is in WRAM first, but hey. 
 ; It seems to work on bsnes accuracy to load straight from ROM :) Must be good! :D
-   TransferBlockSPC :TestSPCData, TestSPCData, $2000, 32
-   TransferBlockSPC :TestSPCData, TestSPCData, $2020, 32
-   TransferBlockSPC :SPC_RAM2, SPC_RAM2 + $100, $2040, 32 ; This works, wth?!?! :(
+   ;TransferBlockSPC :TestSPCData, TestSPCData, $2000, 32
+   ;TransferBlockSPC :TestSPCData, TestSPCData, $2020, 32
+   ;TransferBlockSPC :SPC_RAM2, SPC_RAM2 + $100, $2040, 32 ; This works, wth?!?! :(
 
    ;jsr SendSPCRAM ; Why the fuck does this not work? :( 
-   jsr SendSPCInitCode ; This does seem to work now.
+   ;jsr SendSPCInitCode ; This does seem to work now.
    ;jsr SendDSPState ; This breaks when transfering index $6c for some reason.
-   SPCJump $ffa0 ; Make SPC jump to our ASM routine.
+   ;SPCJump $ffa0 ; Make SPC jump to our ASM routine.
+
+   TransferBlockSPC :TestSPCROM TestSPCROM, $f000, $0800 ; Transfer test rom
+   SPCJump $f000 ; Branch to it.
 
    plx
    pla
