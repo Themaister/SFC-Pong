@@ -216,12 +216,35 @@ InitPillar:
    pla
    rts
 
+; Do startup stuff that has to happen every frame.
+PreFrame:
+   pha
+
+   jsr SaveJoypadStatus
+
+   stz Screw_Player1_Down
+   stz Screw_Player1_Up
+   stz Screw_Player2_Down
+   stz Screw_Player2_Up
+   stz Screw_Player1_Right
+   stz Screw_Player2_Left
+
+   pla
+   rts
+
+
+; Do stuff that happens at the end of every frame.
+PostFrame:
+   rts
 
 FrameUpdate:
    LoadOAM OAMData, 0, 128 ; Update coordinates in OAM ASAP. We might have to do expensive calculation after this.
+
+   jsr PreFrame
    jsr UpdateBall
    jsr UpdatePillarVert
    jsr UpdatePillarHoriz
+   jsr PostFrame
 
    rts
 
@@ -241,74 +264,94 @@ UpdateBall:
    sta BallPosY
    sta BallSpriteOAM + 1 ; y-coord
 
+; Check for acceleration (spin)
+   inc BallAccelCount
+   lda BallAccelCount
+   cmp #$10 ; We update the accel value every 16th frame.
+   bne +
+   stz BallAccelCount
+
+   lda BallAccelX
+   clc
+   adc BallSpeedX
+   sta BallSpeedX
+
+   lda BallAccelY
+   clc
+   adc BallSpeedY
+   sta BallSpeedY
++
+
+; Do collition detect and stuff ...
    jsr CollitionDetect
    jsr CheckScore
+
+; Update acceleration values for X/Y, based on collition detection.
+   lda BallAccelX
+   clc
+   adc Screw_Player1_Right
+   sec
+   sbc Screw_Player2_Left
+   sta BallAccelX
+
+   lda BallAccelY
+   clc
+   adc Screw_Player1_Up
+   clc
+   adc Screw_Player2_Up
+   sec
+   sbc Screw_Player1_Down
+   sec
+   sbc Screw_Player2_Down
+   sta BallAccelY
+
+; Cap the balls speed to something sane.
+   lda BallSpeedX
+   cmp #$05
+   bmi +
+   lda #$05
+   sta BallSpeedX
++
+   lda BallSpeedY
+   cmp #$05
+   bmi +
+   lda #$05
+   sta BallSpeedY
++
+   lda BallSpeedX
+   cmp #$FC
+   bpl +
+   lda #$FC
+   sta BallSpeedX
++
+   lda BallSpeedY
+   cmp #$FC
+   bpl +
+   lda #$FC
+   sta BallSpeedY
++
 
    pla
    rts
 
+; Check if the ball is in scoring region and update score.
 CheckScore:
    pha
 
-; Wtf is this shit... if (BallPosX < 0x10 || BallPosX >= 0xF0) { do_shit(); }
    lda BallPosX
-   cmp #$10
+   cmp #$08
    bcs +
    inc Player2Score
-   bra _check_score_is_true
+   bra _check_score_update
 
 +  lda BallPosX
    cmp #$F0
    bcc _check_score_end
    inc Player1Score
 
-_check_score_is_true:
-; Set some initial speed/coord
-   lda #$60
-   clc
-   adc Player1Score
-   sta BallPosX
-   clc
-   adc Player2Score
-   sta BallPosY
-   lda #$04
-   clc
-   adc Player1Score
-   lsr
-   sta BallSpeedX
-   lda #$05
-   adc Player2Score
-   lsr
-   sta BallSpeedY
-
-; Check for Advantage/Game, etc.
+_check_score_update:
    lda Player1Score
-   cmp #$03
-   bcc +
-   lda Player2Score
-   cmp #$02
-   bcs ++
-   lda #$04
-   sta Player1Score
-   bra _skip_score_calculation
-++ lda #$02
-   sta Player2Score
-
-+  lda Player2Score
-   cmp #$03
-   bcc _skip_score_calculation
-   lda Player1Score
-   cmp #$02
-   bcs ++
-   lda #$04
-   sta Player2Score
-   bra _skip_score_calculation
-++ lda #$02
-   sta Player1Score
-
-_skip_score_calculation:
-   lda Player1Score
-   and #$07
+   and #$07 ; Roll over after a while ...
    clc
    adc #$10 ; Sprite index for score.
    sta Player1ScoreOAM + 2
@@ -318,6 +361,15 @@ _skip_score_calculation:
    clc
    adc #$10 ; Sprite index for score.
    sta Player2ScoreOAM + 2
+
+   lda #$60
+   sta BallPosX
+   sta BallPosY
+   lda #$02
+   sta BallSpeedX
+   sta BallSpeedY
+   stz BallAccelX
+   stz BallAccelY
 
 _check_score_end:
    pla
@@ -348,6 +400,8 @@ _collition_detect_left:
    jsr SPCPlaySound
    negate_acc
    sta BallSpeedX
+   stz BallAccelX
+   stz BallAccelY
    jmp _collition_detect_up
    
 _collition_detect_right:
@@ -358,6 +412,8 @@ _collition_detect_right:
    jsr SPCPlaySound
    negate_acc
    sta BallSpeedX
+   stz BallAccelX
+   stz BallAccelY
 
 
 _collition_detect_up:
@@ -420,7 +476,22 @@ CollitionDetectPillar:
    jsr SPCPlaySound
    negate_acc
    sta BallSpeedX
-   bra _collition_detect_pillar_end
+   stz BallAccelX
+
+   lda Joypad1Right ; Check if we should add right spin.
+   beq ++
+   inc Screw_Player1_Right
+++
+   lda Joypad1Up ; Check if we should add up spin.
+   beq ++
+   inc Screw_Player1_Up
+++
+   lda Joypad1Down
+   beq ++
+   inc Screw_Player1_Down
+++
+
+   jmp _collition_detect_pillar_end
 
 +  lda BallPosX
    cmp PillarEdgeSpriteOAM + 0 ; X coord of p1.
@@ -434,6 +505,7 @@ CollitionDetectPillar:
    jsr SPCPlaySound
    negate_acc
    sta BallSpeedX
+   stz BallAccelX
    bra _collition_detect_pillar_end
 
 
@@ -465,6 +537,21 @@ _collition_detect_pillar_r:
    jsr SPCPlaySound
    negate_acc
    sta BallSpeedX
+   stz BallAccelX
+
+   lda Joypad2Left
+   beq ++
+   inc Screw_Player2_Left
+++
+   lda Joypad2Up
+   beq ++
+   inc Screw_Player2_Up
+++
+   lda Joypad2Down
+   beq ++
+   inc Screw_Player2_Down
+++
+
    bra _collition_detect_pillar_end
 
 +  lda BallPosX
@@ -479,6 +566,7 @@ _collition_detect_pillar_r:
    jsr SPCPlaySound
    negate_acc
    sta BallSpeedX
+   stz BallAccelX
 
 _collition_detect_pillar_end:
    pla
@@ -526,8 +614,7 @@ UpdatePillarVert:
    pha
    phx
 
-   lda Joypad1Hi
-   and #$08 ; Up
+   lda Joypad1Up
    beq _skip_p1_up
 
    lda PillarEdgeSpriteOAM + 1 ; Load y-coord of p1 upper edge
@@ -543,8 +630,7 @@ UpdatePillarVert:
    UpdateBlockVert
 
 _skip_p1_up:
-   lda Joypad1Hi
-   and #$04 ; Down
+   lda Joypad1Down
    beq _skip_p1_down
 
    lda PillarEdgeSpriteOAM + 9 ; Load y-coord of p1 lower edge
@@ -560,8 +646,7 @@ _skip_p1_up:
    UpdateBlockVert
 
 _skip_p1_down:
-   lda Joypad2Hi
-   and #$08 ; Up
+   lda Joypad2Up
    beq _skip_p2_up
 
    lda PillarEdgeSpriteOAM + 5 ; Load y-coord of p2 upper edge
@@ -577,8 +662,7 @@ _skip_p1_down:
    UpdateBlockVert
 
 _skip_p2_up:
-   lda Joypad2Hi
-   and #$04 ; Down
+   lda Joypad2Down
    beq _skip_p2_down
 
    lda PillarEdgeSpriteOAM + 13 ; Load y-coord of p2 lower edge
@@ -605,8 +689,7 @@ UpdatePillarHoriz:
    pha
    phx
 
-   lda Joypad1Hi
-   and #$02 ; Left
+   lda Joypad1Left
    beq _skip_p1_left
 
    lda PillarEdgeSpriteOAM ; Load x-coord of p1 upper edge
@@ -622,8 +705,7 @@ UpdatePillarHoriz:
    UpdateBlockHoriz
 
 _skip_p1_left:
-   lda Joypad1Hi
-   and #$01 ; Right
+   lda Joypad1Right
    beq _skip_p1_right
 
    lda PillarEdgeSpriteOAM + 8 ; Load x-coord of p1 lower edge
@@ -639,8 +721,7 @@ _skip_p1_left:
    UpdateBlockHoriz
 
 _skip_p1_right:
-   lda Joypad2Hi
-   and #$02 ; Left
+   lda Joypad2Left
    beq _skip_p2_left
 
    lda PillarEdgeSpriteOAM + 4 ; Load x-coord of p2 upper edge
@@ -656,8 +737,7 @@ _skip_p1_right:
    UpdateBlockHoriz
 
 _skip_p2_left:
-   lda Joypad2Hi
-   and #$01 ; Right
+   lda Joypad2Right
    beq _skip_p2_right
 
    lda PillarEdgeSpriteOAM + 12 ; Load x-coord of p2 lower edge
