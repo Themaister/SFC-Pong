@@ -108,3 +108,26 @@
    eor #$FF
    inc A
 .endm
+
+
+; Macros for updating state of pillars.
+; A: amount to add to coordinates.
+; X: pointer to pillar.
+.macro UpdateBlockVert
+   inx
+   jsr UpdateBlock
+.endm
+
+.macro UpdateBlockHoriz
+   jsr UpdateBlock
+.endm
+
+.macro UpdateEdgeBlockVert
+   inx
+   jsr UpdateEdgeBlock
+.endm
+
+.macro UpdateEdgeBlockHoriz
+   jsr UpdateEdgeBlock
+.endm
+

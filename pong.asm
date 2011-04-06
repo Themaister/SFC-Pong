@@ -220,7 +220,8 @@ InitPillar:
 FrameUpdate:
    LoadOAM OAMData, 0, 128 ; Update coordinates in OAM ASAP. We might have to do expensive calculation after this.
    jsr UpdateBall
-   jsr UpdatePillar
+   jsr UpdatePillarVert
+   jsr UpdatePillarHoriz
 
    rts
 
@@ -394,20 +395,26 @@ CollitionDetectPillar:
 
 ;_collition_detect_pillar_l:
    lda BallPosY
+   clc
+   adc #$08
    cmp PillarEdgeSpriteOAM + 1 ; Upper coord of P1
    bcc _collition_detect_pillar_r
 
    lda BallPosY
+   sec
+   sbc #$08
    cmp PillarEdgeSpriteOAM + 9
    bcs _collition_detect_pillar_r
 
    lda BallSpeedX
    bpl +
    lda BallPosX
-   cmp #($30 + 9)
-   bcs _collition_detect_pillar_r
-   cmp #($30 - 0)
+   cmp PillarEdgeSpriteOAM + 0 ; X coord of p1.
    bcc _collition_detect_pillar_r
+   sec
+   sbc #$09
+   cmp PillarEdgeSpriteOAM + 0 ; X coord of p1.
+   bcs _collition_detect_pillar_r
 
    lda BallSpeedX
    jsr SPCPlaySound
@@ -416,10 +423,12 @@ CollitionDetectPillar:
    bra _collition_detect_pillar_end
 
 +  lda BallPosX
-   cmp #($30 - 9)
-   bcc _collition_detect_pillar_r
-   cmp #($30 + 0)
+   cmp PillarEdgeSpriteOAM + 0 ; X coord of p1.
    bcs _collition_detect_pillar_r
+   clc
+   adc #$09
+   cmp PillarEdgeSpriteOAM + 0 ; X coord of p1.
+   bcc _collition_detect_pillar_r
 
    lda BallSpeedX
    jsr SPCPlaySound
@@ -431,20 +440,26 @@ CollitionDetectPillar:
 _collition_detect_pillar_r:
 
    lda BallPosY
-   cmp PillarEdgeSpriteOAM + 5 ; Upper coord of P1
+   clc
+   adc #$08
+   cmp PillarEdgeSpriteOAM + 5 ; Y coord of P2
    bcc _collition_detect_pillar_end
 
    lda BallPosY
+   sec
+   sbc #$08
    cmp PillarEdgeSpriteOAM + 13
    bcs _collition_detect_pillar_end
 
    lda BallSpeedX
    bpl +
    lda BallPosX
-   cmp #($C0 + 9)
-   bcs _collition_detect_pillar_end
-   cmp #($C0 - 0)
+   cmp PillarEdgeSpriteOAM + 4 ; X coord of P2
    bcc _collition_detect_pillar_end
+   sec
+   sbc #$09
+   cmp PillarEdgeSpriteOAM + 4 ; X coord of P2
+   bcs _collition_detect_pillar_end
 
    lda BallSpeedX
    jsr SPCPlaySound
@@ -453,10 +468,12 @@ _collition_detect_pillar_r:
    bra _collition_detect_pillar_end
 
 +  lda BallPosX
-   cmp #($C0 - 9)
-   bcc _collition_detect_pillar_end
-   cmp #($C0 + 0)
+   cmp PillarEdgeSpriteOAM + 4
    bcs _collition_detect_pillar_end
+   clc
+   adc #$09
+   cmp PillarEdgeSpriteOAM + 4
+   bcc _collition_detect_pillar_end
 
    lda BallSpeedX
    jsr SPCPlaySound
@@ -468,47 +485,44 @@ _collition_detect_pillar_end:
    rts
 
 
-; -- Updates block
-; -- Adds in A, block in X
+
+; Updates all elems in a pillar. Used by macros.
 UpdateBlock:
    phy
-   ldy #$0000
--  pha 
+   ldy #$0004
+_update_block_loop:
+   pha
    clc
-   adc $01, x
-   sta $01, x
+   adc $00, x
+   sta $00, x
    pla
 
-   iny
-   iny
-   iny
-   iny
    inx
    inx
    inx
    inx
-
-   cpy #$0010
-   bne -
+   dey
+   bne _update_block_loop
 
    ply
    rts
 
+; Updates edges of a pillar block. Used by macros.
 UpdateEdgeBlock:
    pha
    clc
-   adc $01, x
-   sta $01, x
+   adc $00, x
+   sta $00, x
    pla
 
    pha
    clc
-   adc $09, x
-   sta $09, x
+   adc $08, x
+   sta $08, x
    pla
    rts
 
-UpdatePillar:
+UpdatePillarVert:
    pha
    phx
 
@@ -522,11 +536,11 @@ UpdatePillar:
 
    ldx #PillarEdgeSpriteOAM
    lda #$FE
-   jsr UpdateEdgeBlock
+   UpdateEdgeBlockVert
 
    ldx #PillarSpriteOAM
    lda #$FE
-   jsr UpdateBlock
+   UpdateBlockVert
 
 _skip_p1_up:
    lda Joypad1Hi
@@ -539,11 +553,11 @@ _skip_p1_up:
 
    ldx #PillarEdgeSpriteOAM
    lda #$02
-   jsr UpdateEdgeBlock
+   UpdateEdgeBlockVert
 
    ldx #PillarSpriteOAM
    lda #$02
-   jsr UpdateBlock
+   UpdateBlockVert
 
 _skip_p1_down:
    lda Joypad2Hi
@@ -556,11 +570,11 @@ _skip_p1_down:
 
    ldx #(PillarEdgeSpriteOAM + 4)
    lda #$FE
-   jsr UpdateEdgeBlock
+   UpdateEdgeBlockVert
 
    ldx #PillarSpriteOAM + 16
    lda #$FE
-   jsr UpdateBlock
+   UpdateBlockVert
 
 _skip_p2_up:
    lda Joypad2Hi
@@ -573,13 +587,92 @@ _skip_p2_up:
 
    ldx #(PillarEdgeSpriteOAM + 4)
    lda #$02
-   jsr UpdateEdgeBlock
+   UpdateEdgeBlockVert
 
    ldx #PillarSpriteOAM + 16
    lda #$02
-   jsr UpdateBlock
+   UpdateBlockVert
 
 _skip_p2_down:
+
+   plx
+   pla
+   rts
+
+
+; Yes, code duplication is bad, mmkay?
+UpdatePillarHoriz:
+   pha
+   phx
+
+   lda Joypad1Hi
+   and #$02 ; Left
+   beq _skip_p1_left
+
+   lda PillarEdgeSpriteOAM ; Load x-coord of p1 upper edge
+   cmp #$20
+   bmi _skip_p1_left
+
+   ldx #PillarEdgeSpriteOAM
+   lda #$FE
+   UpdateEdgeBlockHoriz
+
+   ldx #PillarSpriteOAM
+   lda #$FE
+   UpdateBlockHoriz
+
+_skip_p1_left:
+   lda Joypad1Hi
+   and #$01 ; Right
+   beq _skip_p1_right
+
+   lda PillarEdgeSpriteOAM + 8 ; Load x-coord of p1 lower edge
+   cmp #$70
+   bpl _skip_p1_right
+
+   ldx #PillarEdgeSpriteOAM
+   lda #$02
+   UpdateEdgeBlockHoriz
+
+   ldx #PillarSpriteOAM
+   lda #$02
+   UpdateBlockHoriz
+
+_skip_p1_right:
+   lda Joypad2Hi
+   and #$02 ; Left
+   beq _skip_p2_left
+
+   lda PillarEdgeSpriteOAM + 4 ; Load x-coord of p2 upper edge
+   cmp #$98
+   bmi _skip_p2_left
+
+   ldx #(PillarEdgeSpriteOAM + 4)
+   lda #$FE
+   UpdateEdgeBlockHoriz
+
+   ldx #PillarSpriteOAM + 16
+   lda #$FE
+   UpdateBlockHoriz
+
+_skip_p2_left:
+   lda Joypad2Hi
+   and #$01 ; Right
+   beq _skip_p2_right
+
+   lda PillarEdgeSpriteOAM + 12 ; Load x-coord of p2 lower edge
+   cmp #$D0
+   bpl _skip_p2_right
+
+   ldx #(PillarEdgeSpriteOAM + 4)
+   lda #$02
+   UpdateEdgeBlockHoriz
+
+   ldx #PillarSpriteOAM + 16
+   lda #$02
+   UpdateBlockHoriz
+
+_skip_p2_right:
 
    plx
    pla
