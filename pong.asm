@@ -330,10 +330,10 @@ CollitionDetect:
    ; Check to see if we're on the "scoring" edge. 
    ; If so, don't perform collition detection at all.
    lda BallPosY
-   cmp #(16 * 8)
+   cmp #(17 * 8)
    bcs _collition_detect_left
    lda BallPosY
-   cmp #(12 * 8)
+   cmp #(11 * 8)
    bcc _collition_detect_left
    bra _collition_detect_end
 
