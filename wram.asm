@@ -22,6 +22,8 @@
 .equ PillarSpriteOAM $1020
 .equ Player1ScoreOAM $1040
 .equ Player2ScoreOAM $1044
+.equ Player1ScoreHIOAM $1048
+.equ Player2ScoreHIOAM $104C
 
 ; Game state
 .equ BallPosX $0102
@@ -41,5 +43,7 @@
 
 .equ Player1Score $0180
 .equ Player2Score $0181
+.equ Player1ScoreHI $0182
+.equ Player2ScoreHI $0183
 
 .equ SPCCounter $0200

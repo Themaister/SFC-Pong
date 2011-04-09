@@ -108,26 +108,37 @@ InitScore:
 
    stz Player1Score
    stz Player2Score
+   stz Player1ScoreHI
+   stz Player2ScoreHI
 
    lda #$05
    sta Player1ScoreOAM + 1
    sta Player2ScoreOAM + 1
+   sta Player1ScoreHIOAM + 1
+   sta Player2ScoreHIOAM + 1
 
+   lda #$38
+   sta Player1ScoreHIOAM
    lda #$40
    sta Player1ScoreOAM
+   lda #$A8
+   sta Player2ScoreHIOAM
    lda #$B0
    sta Player2ScoreOAM
 
    lda #$10
    sta Player1ScoreOAM + 2
    sta Player2ScoreOAM + 2
+   sta Player1ScoreHIOAM + 2
+   sta Player2ScoreHIOAM + 2
 
    lda #%00110000
    sta Player1ScoreOAM + 3
    sta Player2ScoreOAM + 3
+   sta Player1ScoreHIOAM + 3
+   sta Player2ScoreHIOAM + 3
 
-   lda #%01010000
-   sta OAMData + $0200 + 4
+   stz OAMData + $0200 + 4
 
    pla
    rts
@@ -351,13 +362,35 @@ CheckScore:
 
 _check_score_update:
    lda Player1Score
-   and #$07 ; Roll over after a while ...
+   cmp #10
+   bne +
+   lda #$00
+   sta Player1Score
+   inc Player1ScoreHI
+   xba
+   lda Player1ScoreHI
+   clc
+   adc #$10
+   sta Player1ScoreHIOAM + 2
+   xba
++
    clc
    adc #$10 ; Sprite index for score.
    sta Player1ScoreOAM + 2
 
    lda Player2Score
-   and #$07
+   cmp #10
+   bne +
+   lda #$00
+   sta Player2Score
+   inc Player2ScoreHI
+   xba
+   lda Player2ScoreHI
+   clc
+   adc #$10
+   sta Player2ScoreHIOAM + 2
+   xba
++
    clc
    adc #$10 ; Sprite index for score.
    sta Player2ScoreOAM + 2
