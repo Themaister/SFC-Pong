@@ -8,7 +8,7 @@ LoadData:
    LoadVRAM BallSprite, $2000, $0020 ; 8x8 @ 4bpp, index 0
    LoadVRAM PillarEdgeSprite, $2010, $0020
    LoadVRAM PillarMiddleSprite, $2020, $0020
-   LoadVRAM ScoreSprite, $2000 + 16 * 16, 5 * $0020
+   LoadVRAM ScoreSprite, $2000 + 16 * 16, 6 * $0020
 
    rts
 
