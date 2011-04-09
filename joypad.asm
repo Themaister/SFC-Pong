@@ -58,6 +58,11 @@ SaveJoypadStatus:
    lda Joypad2Hi
    and #$01 ; Right
    sta Joypad2Right
+
+   lda Joypad1Hi
+   and #$10 ; Start
+   sta Joypad1Start
+
    pla
    rts
 

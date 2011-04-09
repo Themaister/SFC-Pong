@@ -71,6 +71,7 @@ VBlank: ; VBlank routine
 ; Set up sprites in HW, and set up initial game state.
 InitGame:
 
+   stz GamePaused
 
    jsr InitBall
    jsr InitPillar
@@ -227,11 +228,41 @@ InitPillar:
    pla
    rts
 
+CheckPaused:
+   pha
+
+   lda OldPressedStart
+   bne _check_paused_end
+
+   lda Joypad1Start
+   beq _check_paused_end
+
+   lda GamePaused
+   eor #$01
+   sta GamePaused
+   
+   beq _check_paused_is_active
+_check_paused_is_paused:
+   lda #$04
+   sta INIDISP
+   bra _check_paused_end
+_check_paused_is_active:
+   lda #$0F
+   sta INIDISP
+
+_check_paused_end:
+   lda Joypad1Start
+   sta OldPressedStart
+
+   pla
+   rts
+
 ; Do startup stuff that has to happen every frame.
 PreFrame:
    pha
 
    jsr SaveJoypadStatus
+   jsr CheckPaused
 
    stz Screw_Player1_Down
    stz Screw_Player1_Up
@@ -252,11 +283,15 @@ FrameUpdate:
    LoadOAM OAMData, 0, 128 ; Update coordinates in OAM ASAP. We might have to do expensive calculation after this.
 
    jsr PreFrame
+
+   lda GamePaused
+   bne +
+
    jsr UpdateBall
    jsr UpdatePillarVert
    jsr UpdatePillarHoriz
    jsr PostFrame
-
++
    rts
 
 

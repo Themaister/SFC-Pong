@@ -15,6 +15,8 @@
 .equ Joypad2Left $000A
 .equ Joypad2Right $000B
 
+.equ Joypad1Start $0010
+
 .equ OAMData $1000
 
 .equ BallSpriteOAM $1000
@@ -40,6 +42,9 @@
 .equ Screw_Player2_Up $0143
 .equ Screw_Player1_Right $0144
 .equ Screw_Player2_Left $0145
+
+.equ GamePaused $0160
+.equ OldPressedStart $0161
 
 .equ Player1Score $0180
 .equ Player2Score $0181
