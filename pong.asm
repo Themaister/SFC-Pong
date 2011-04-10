@@ -310,40 +310,19 @@ _check_paused_end:
    rts
 
 ; Calculate AI movement for player 2. Not very good algorithm ... ;)
+; Here be asm dragon.
 CalculateAIMovement:
    pha
 
-   lda PillarEdgeSpriteOAM + 4 ; Load X coord for pillar
-   sec
-   sbc BallPosX
-   pha ; Push result on stack
-
-; Calculate "target" pos.
-   lda BallSpeedY
-   bpl +
-   lda BallPosY
-   clc
-   adc 1, s
-   bra ++
-+
-   lda BallPosY
-   sec
-   sbc 1, s
-++
-
-   cmp PillarEdgeSpriteOAM + 5
-   bcs +
-   lda #$01
-   sta Joypad2Up
-   bra ++
-+
-   lda #$01
-   sta Joypad2Down
-++
-   lda #$01
+   lda Joypad1Up
    sta Joypad2Left
+   lda Joypad1Right
+   sta Joypad2Down
+   lda Joypad1Down
+   sta Joypad2Right
+   lda Joypad1Left
+   sta Joypad2Up
 
-   pla
    pla
    rts
 
