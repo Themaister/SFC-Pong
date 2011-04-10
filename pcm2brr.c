@@ -1,3 +1,14 @@
+//
+//
+// Naive PCM to BRR converter.
+// Author: Hans-Kristian Arntzen
+// License: Do whatever you want with it.
+//
+// Input format is native-endian signed 16-bit.
+// Accepts only raw PCM, mono.
+//
+//
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
