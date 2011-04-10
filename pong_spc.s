@@ -174,7 +174,7 @@ Start:
    wdsp VOL_L3, $7f
    wdsp VOL_R3, $7f
    wdsp P_L3, $00
-   wdsp P_H3, $10
+   wdsp P_H3, $04
    wdsp SRCN3, 3
    wdsp ADSR3_1, 0
    wdsp ADSR3_2, 0
