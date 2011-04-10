@@ -40,6 +40,17 @@
 .equ ENVX2 $28
 .equ OUTX2 $29
 
+.equ VOL_L3 $30
+.equ VOL_R3 $31
+.equ P_L3 $32
+.equ P_H3 $33
+.equ SRCN3 $34
+.equ ADSR3_1 $35
+.equ ADSR3_2 $36
+.equ GAIN3 $37
+.equ ENVX3 $38
+.equ OUTX3 $39
+
 .equ MVOL_L $0c
 .equ MVOL_R $1c
 .equ EVOL_L $2c
@@ -77,6 +88,11 @@
 .macro wdsp
    mov a, #\1
    mov y, #\2
+   movw DSP_R, ya
+.endm
+
+.macro wdsp_reg
+   mov a, #\1
    movw DSP_R, ya
 .endm
 
@@ -152,8 +168,16 @@ Start:
    wdsp P_H2, $03
    wdsp SRCN2, 0
    wdsp ADSR2_1, %11011110
-   wdsp ADSR2_2, %01111110
+   wdsp ADSR2_2, %01111100
    wdsp GAIN2, $7f
+
+   wdsp VOL_L3, $7f
+   wdsp VOL_R3, $7f
+   wdsp P_L3, $00
+   wdsp P_H3, $02
+   wdsp SRCN3, 2
+   wdsp ADSR3_1, %11011110
+   wdsp ADSR3_2, %01110111
 
    wdsp ESA, 1
    wdsp EDL, 15
@@ -168,8 +192,6 @@ Start:
    wdsp EVOL_L, $40
    wdsp EVOL_R, $40
 
-
-
    mov x, #$00
    mov IO0, x
 
@@ -179,11 +201,13 @@ _forever:
    cmp x, IO0 ; Wait till it's echoed back.
    bne -
    inc x
+
    mov IO0, x ; Set up new popcorn
    mov a, IO1
    mov IO1, a ; Echo it back to CPU.
 
-   wdsp KON, 7 ; Play sound effect.
+   mov y, IO2 ; Get keys
+   wdsp_reg KON ; Play sound effect.
 
    jmp !_forever
 

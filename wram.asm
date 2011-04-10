@@ -27,6 +27,10 @@
 .equ Player1ScoreHIOAM $1048
 .equ Player2ScoreHIOAM $104C
 
+.equ TimerSecondOAM $1080
+.equ TimerSecondHIOAM $1084
+.equ TimerMinuteOAM $1088
+
 ; Game state
 .equ BallPosX $0102
 .equ BallPosY $0103
@@ -50,5 +54,10 @@
 .equ Player2Score $0181
 .equ Player1ScoreHI $0182
 .equ Player2ScoreHI $0183
+
+.equ TimerSecond $0190
+.equ TimerSecondHI $0191
+.equ TimerMinute $0192
+.equ TimerCounter $0193
 
 .equ SPCCounter $0200

@@ -131,3 +131,17 @@
    jsr UpdateEdgeBlock
 .endm
 
+.macro SPCPlaySoundEffect
+   pha
+   lda #$07
+   jsr SPCPlaySound
+   pla
+.endm
+
+.macro SPCPlaySoundEffect_Score
+   pha
+   lda #$08
+   jsr SPCPlaySound
+   pla
+.endm
+

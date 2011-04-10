@@ -7,7 +7,7 @@
 .include "header.inc"
 .include "initsnes.asm"
 
-.bank 1
+.bank 0
 .section "Data"
 .include "data.inc"
 .ends
@@ -76,8 +76,9 @@ InitGame:
    jsr InitBall
    jsr InitPillar
    jsr InitScore
+   jsr InitTimer
       
-   LoadOAM OAMData, 0, 128
+   LoadOAM OAMData, 0, 256
    LoadOAM OAMData + $0200, $0100, 32
 
    rts
@@ -122,9 +123,9 @@ InitScore:
    sta Player1ScoreHIOAM
    lda #$40
    sta Player1ScoreOAM
-   lda #$A8
+   lda #$B8
    sta Player2ScoreHIOAM
-   lda #$B0
+   lda #$C0
    sta Player2ScoreOAM
 
    lda #$10
@@ -143,6 +144,45 @@ InitScore:
 
    pla
    rts
+
+
+InitTimer:
+   pha
+
+   lda #$02
+   sta TimerMinute
+   lda #$12
+   sta TimerMinuteOAM + 2
+
+   stz TimerSecond
+   stz TimerSecondHI
+   lda #$10
+   sta TimerSecondOAM + 2
+   sta TimerSecondHIOAM + 2
+
+   lda #$05
+   sta TimerSecondOAM + 1
+   sta TimerSecondHIOAM + 1
+   sta TimerMinuteOAM + 1
+
+   lda #$74
+   sta TimerMinuteOAM
+   lda #$80
+   sta TimerSecondHIOAM
+   lda #$88
+   sta TimerSecondOAM
+
+   lda #%00110000
+   sta TimerSecondOAM + 3
+   sta TimerSecondHIOAM + 3
+   sta TimerMinuteOAM + 3
+
+   lda #%01000000
+   sta OAMData + $0200 + 8
+
+   pla
+   rts
+
 
 InitPillar:
    pha
@@ -280,7 +320,7 @@ PostFrame:
    rts
 
 FrameUpdate:
-   LoadOAM OAMData, 0, 128 ; Update coordinates in OAM ASAP. We might have to do expensive calculation after this.
+   LoadOAM OAMData, 0, 256 ; Update coordinates in OAM ASAP. We might have to do expensive calculation after this.
 
    jsr PreFrame
 
@@ -288,6 +328,7 @@ FrameUpdate:
    bne +
 
    jsr UpdateBall
+   jsr UpdateTimer
    jsr UpdatePillarVert
    jsr UpdatePillarHoriz
    jsr PostFrame
@@ -380,6 +421,58 @@ UpdateBall:
    pla
    rts
 
+
+UpdateTimer:
+   pha
+   
+   inc TimerCounter
+   lda TimerCounter
+   cmp #60 ; 60 fps
+   bne _update_timer_end
+   stz TimerCounter
+
+   ; Check if we have to update second-hi, and possibly minute count too!
+   dec TimerSecond
+   lda TimerSecond
+   bpl _update_timer_end
+
+   lda #9
+   sta TimerSecond
+
+   dec TimerSecondHI
+   lda TimerSecondHI
+   bpl _update_timer_end
+
+   lda #5
+   sta TimerSecondHI
+
+   dec TimerMinute
+   lda TimerMinute
+   bpl _update_timer_end
+
+   lda #1
+   sta TimerMinute
+
+_update_timer_end:
+   lda TimerMinute
+   clc
+   adc #$10
+   sta TimerMinuteOAM + 2
+
+   lda TimerSecondHI
+   clc
+   adc #$10
+   sta TimerSecondHIOAM + 2
+
+   lda TimerSecond
+   clc
+   adc #$10
+   sta TimerSecondOAM + 2
+
+   pla
+   rts
+
+
 ; Check if the ball is in scoring region and update score.
 CheckScore:
    pha
@@ -439,6 +532,8 @@ _check_score_update:
    stz BallAccelX
    stz BallAccelY
 
+   SPCPlaySoundEffect_Score
+
 _check_score_end:
    pla
    rts
@@ -465,7 +560,7 @@ _collition_detect_left:
    cmp #$18
    bcs _collition_detect_up
    lda BallSpeedX
-   jsr SPCPlaySound
+   SPCPlaySoundEffect
    negate_acc
    sta BallSpeedX
    stz BallAccelX
@@ -477,7 +572,7 @@ _collition_detect_right:
    cmp #$E8
    bcc _collition_detect_up
    lda BallSpeedX
-   jsr SPCPlaySound
+   SPCPlaySoundEffect
    negate_acc
    sta BallSpeedX
    stz BallAccelX
@@ -492,7 +587,7 @@ _collition_detect_up:
    cmp #$24
    bcs _collition_detect_end
    lda BallSpeedY
-   jsr SPCPlaySound
+   SPCPlaySoundEffect
    negate_acc
    sta BallSpeedY
    bra _collition_detect_end
@@ -502,7 +597,7 @@ _collition_detect_down:
    cmp #$C8
    bcc _collition_detect_end
    lda BallSpeedY
-   jsr SPCPlaySound
+   SPCPlaySoundEffect
    negate_acc
    sta BallSpeedY
 
@@ -541,7 +636,7 @@ CollitionDetectPillar:
    bcs _collition_detect_pillar_r
 
    lda BallSpeedX
-   jsr SPCPlaySound
+   SPCPlaySoundEffect
    negate_acc
    sta BallSpeedX
    stz BallAccelX
@@ -570,7 +665,7 @@ CollitionDetectPillar:
    bcc _collition_detect_pillar_r
 
    lda BallSpeedX
-   jsr SPCPlaySound
+   SPCPlaySoundEffect
    negate_acc
    sta BallSpeedX
    stz BallAccelX
@@ -602,7 +697,7 @@ _collition_detect_pillar_r:
    bcs _collition_detect_pillar_end
 
    lda BallSpeedX
-   jsr SPCPlaySound
+   SPCPlaySoundEffect
    negate_acc
    sta BallSpeedX
    stz BallAccelX
@@ -631,7 +726,7 @@ _collition_detect_pillar_r:
    bcc _collition_detect_pillar_end
 
    lda BallSpeedX
-   jsr SPCPlaySound
+   SPCPlaySoundEffect
    negate_acc
    sta BallSpeedX
    stz BallAccelX

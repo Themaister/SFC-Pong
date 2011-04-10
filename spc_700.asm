@@ -140,8 +140,11 @@ InitSPC:
    
 
 ; Todo: Extend to play many different sounds.
+; A : Sample index.
 SPCPlaySound:
    pha
+
+   sta APUIO2
 
    inc SPCCounter
    lda SPCCounter
