@@ -16,6 +16,8 @@
 .equ Joypad2Right $000B
 
 .equ Joypad1Start $0010
+.equ Joypad2Start $0011
+.equ HumanPlayer2 $0020
 
 .equ OAMData $1000
 

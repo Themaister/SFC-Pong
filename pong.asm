@@ -309,12 +309,70 @@ _check_paused_end:
    pla
    rts
 
+; Calculate AI movement for player 2. Not very good algorithm ... ;)
+CalculateAIMovement:
+   pha
+
+   lda PillarEdgeSpriteOAM + 4 ; Load X coord for pillar
+   sec
+   sbc BallPosX
+   pha ; Push result on stack
+
+; Calculate "target" pos.
+   lda BallSpeedY
+   bpl +
+   lda BallPosY
+   clc
+   adc 1, s
+   bra ++
++
+   lda BallPosY
+   sec
+   sbc 1, s
+++
+
+   cmp PillarEdgeSpriteOAM + 5
+   bcs +
+   lda #$01
+   sta Joypad2Up
+   bra ++
++
+   lda #$01
+   sta Joypad2Down
+++
+   lda #$01
+   sta Joypad2Left
+
+   pla
+   pla
+   rts
+
+; Start with CPU player. A human player could move in by pressing start.
+UpdateAIMovement:
+   pha
+   
+   lda HumanPlayer2
+   bne +
+
+   lda Joypad2Start
+   beq ++
+   lda #$01
+   sta HumanPlayer2
+   jsr InitGame
+   bra +
+++
+   jsr CalculateAIMovement
++
+   pla
+   rts
+
 ; Do startup stuff that has to happen every frame.
 PreFrame:
    pha
 
    jsr SaveJoypadStatus
    jsr CheckPaused
+   jsr UpdateAIMovement
 
    stz Screw_Player1_Down
    stz Screw_Player1_Up
@@ -777,20 +835,7 @@ _collition_detect_pillar_r:
    negate_acc
    sta BallSpeedX
    stz BallAccelX
-
-   lda Joypad2Left
-   beq ++
-   inc Screw_Player2_Left
-++
-   lda Joypad2Up
-   beq ++
-   inc Screw_Player2_Up
-++
-   lda Joypad2Down
-   beq ++
-   inc Screw_Player2_Down
-++
-
+   
    bra _collition_detect_pillar_end
 
 +  lda BallPosX
@@ -806,6 +851,20 @@ _collition_detect_pillar_r:
    negate_acc
    sta BallSpeedX
    stz BallAccelX
+
+   lda Joypad2Left
+   beq ++
+   inc Screw_Player2_Left
+++
+   lda Joypad2Up
+   beq ++
+   inc Screw_Player2_Up
+++
+   lda Joypad2Down
+   beq ++
+   inc Screw_Player2_Down
+++
+
 
 _collition_detect_pillar_end:
    pla
