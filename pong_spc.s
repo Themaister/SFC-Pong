@@ -130,13 +130,13 @@
 
 .memorymap
    defaultslot 0
-   slot 0 start $f000 size $0800
+   slot 0 start $8000 size $4000
 .endme
-.rombanksize $0800
+.rombanksize $4000
 .rombanks 1
 
 .bank 0 slot 0
-.orga $f000
+.orga $8000
 
 Start:
    wdsp FLG, $00
@@ -174,10 +174,11 @@ Start:
    wdsp VOL_L3, $7f
    wdsp VOL_R3, $7f
    wdsp P_L3, $00
-   wdsp P_H3, $02
-   wdsp SRCN3, 2
-   wdsp ADSR3_1, %11011110
-   wdsp ADSR3_2, %01110111
+   wdsp P_H3, $10
+   wdsp SRCN3, 3
+   wdsp ADSR3_1, 0
+   wdsp ADSR3_2, 0
+   wdsp GAIN3, $7f
 
    wdsp ESA, 1
    wdsp EDL, 15
@@ -211,13 +212,14 @@ _forever:
 
    jmp !_forever
 
-.orga $f400
+.orga $8300
 sample_directory:
    .dw tennis, tennis + 9 ; Tennis sound
    .dw square_wave, square_wave ; Square wave
    .dw triangle_wave, triangle_wave ; Triangle wave
+   .dw test_sample, test_sample ; Some test sample ...
 
-.orga $f500
+.orga $8400
 square_wave:
    .db $c3, $ff, $ff, $ff, $ff, $00, $00, $00, $00
 
@@ -228,5 +230,8 @@ tennis:
 triangle_wave:
    .dw $c2, $89, $ab, $cd, $ef, $01, $23, $45, $67
    .dw $c3, $76, $54, $32, $10, $fe, $dc, $ba, $98
+
+test_sample:
+   .incbin "test.brr"
 
 
