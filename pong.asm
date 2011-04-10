@@ -118,7 +118,11 @@ InitScore:
    sta Player2ScoreOAM + 1
    sta Player1ScoreHIOAM + 1
    sta Player2ScoreHIOAM + 1
+   sta Player1ScoreSetOAM + 1
+   sta Player2ScoreSetOAM + 1
 
+   lda #$10
+   sta Player1ScoreSetOAM
    lda #$38
    sta Player1ScoreHIOAM
    lda #$40
@@ -127,20 +131,28 @@ InitScore:
    sta Player2ScoreHIOAM
    lda #$C0
    sta Player2ScoreOAM
+   lda #$E0
+   sta Player2ScoreSetOAM
 
    lda #$10
    sta Player1ScoreOAM + 2
    sta Player2ScoreOAM + 2
    sta Player1ScoreHIOAM + 2
    sta Player2ScoreHIOAM + 2
+   sta Player1ScoreSetOAM + 2
+   sta Player2ScoreSetOAM + 2
 
    lda #%00110000
    sta Player1ScoreOAM + 3
    sta Player2ScoreOAM + 3
    sta Player1ScoreHIOAM + 3
    sta Player2ScoreHIOAM + 3
+   sta Player1ScoreSetOAM + 3
+   sta Player2ScoreSetOAM + 3
 
    stz OAMData + $0200 + 4
+   lda #%01010000
+   sta OAMData + $0200 + 5
 
    pla
    rts
@@ -316,7 +328,71 @@ PreFrame:
 
 
 ; Do stuff that happens at the end of every frame.
+; Check if the set is over, and declare a winner.
 PostFrame:
+   pha
+
+   lda TimerMinute
+   bne _post_frame_end
+   lda TimerSecondHI
+   bne _post_frame_end
+   lda TimerSecond
+   bne _post_frame_end
+
+; Reset timer.
+   stz TimerCounter
+   lda #$02
+   sta TimerMinute
+   stz TimerSecondHI
+   stz TimerSecond
+
+   rep #$20 ; 16-bit A/mem
+   lda Player1Score
+
+   cmp Player2Score
+   beq _post_frame_draw
+   bcs _post_frame_p1
+   bra _post_frame_p2
+
+
+_post_frame_p1:
+   sep #$20 ; 8-bit A/mem
+   inc Player1ScoreSet
+   bra _post_frame_set_update
+
+_post_frame_p2:
+   sep #$20 ; 8-bit A/mem
+   inc Player2ScoreSet
+   bra _post_frame_set_update
+
+_post_frame_draw:
+   sep #$20 ; 8-bit A/mem
+   inc Player1ScoreSet
+   inc Player2ScoreSet
+
+_post_frame_set_update:
+   lda Player1ScoreSet
+   clc
+   adc #$10
+   sta Player1ScoreSetOAM + 2
+
+   lda Player2ScoreSet
+   clc
+   adc #$10
+   sta Player2ScoreSetOAM + 2
+
+   stz Player1Score
+   stz Player1ScoreHI
+   stz Player2Score
+   stz Player2ScoreHI
+   lda #$10
+   sta Player1ScoreOAM + 2
+   sta Player1ScoreHIOAM + 2
+   sta Player2ScoreOAM + 2
+   sta Player2ScoreHIOAM + 2
+
+_post_frame_end:
+   pla
    rts
 
 FrameUpdate:

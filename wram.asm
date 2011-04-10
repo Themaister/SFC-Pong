@@ -27,6 +27,9 @@
 .equ Player1ScoreHIOAM $1048
 .equ Player2ScoreHIOAM $104C
 
+.equ Player1ScoreSetOAM $1050
+.equ Player2ScoreSetOAM $1054
+
 .equ TimerSecondOAM $1080
 .equ TimerSecondHIOAM $1084
 .equ TimerMinuteOAM $1088
@@ -51,9 +54,12 @@
 .equ OldPressedStart $0161
 
 .equ Player1Score $0180
-.equ Player2Score $0181
-.equ Player1ScoreHI $0182
+.equ Player1ScoreHI $0181
+.equ Player2Score $0182
 .equ Player2ScoreHI $0183
+
+.equ Player1ScoreSet $0184
+.equ Player2ScoreSet $0185
 
 .equ TimerSecond $0190
 .equ TimerSecondHI $0191
