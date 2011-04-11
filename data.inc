@@ -12,9 +12,13 @@ SpritePalette:
 
 BGTiles:
    .dw $0000, $0000, $0000, $0000, $0000, $0000, $0000, $0000 ; Blank/transparent
+   .dw $0000, $0000, $0000, $0000, $0000, $0000, $0000, $0000
    .db $FF, $00, $FF, $00, $FF, $00, $FF, $00, $FF, $00, $FF, $00, $FF, $00, $FF, $00 ; Blue block
+   .dw $0000, $0000, $0000, $0000, $0000, $0000, $0000, $0000
    .db $00, $FF, $00, $FF, $00, $FF, $00, $FF, $00, $FF, $00, $FF, $00, $FF, $00, $FF ; Green block
+   .dw $0000, $0000, $0000, $0000, $0000, $0000, $0000, $0000
    .db $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF ; White block
+   .dw $0000, $0000, $0000, $0000, $0000, $0000, $0000, $0000
 
 ; Bigass tilemap :D
 ; Basically our BG.

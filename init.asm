@@ -3,7 +3,7 @@ LoadData:
    LoadCGRAM BGPalette, 0, 8
    LoadCGRAM SpritePalette, 128, 32
 
-   LoadVRAM BGTiles, $1000, $0040 ; 4 tiles @ 8x8 @ 2bpp
+   LoadVRAM BGTiles, $1000, $0080 ; 4 tiles @ 8x8 @ 4bpp
    LoadVRAM BGTileMap, $0400, 32 * 28 * 2 ; 32x28 tiles @ 2 byte each.
    LoadVRAM BallSprite, $2000, $0020 ; 8x8 @ 4bpp, index 0
    LoadVRAM PillarEdgeSprite, $2010, $0020
@@ -49,7 +49,8 @@ InitVideo:
    pha
    phx
 
-   stz BGMODE ; Set BG mode 0, 8x8 tiles, 4 colors.
+   lda #$01
+   sta BGMODE ; Set BG mode 1, 8x8 tiles, 16 colors.
 
    lda #$04
    sta BG1SC ; Set BG1 tile map offset to $0400 (word).
