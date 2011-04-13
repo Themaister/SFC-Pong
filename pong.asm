@@ -310,7 +310,6 @@ _check_paused_end:
    rts
 
 ; Calculate AI movement for player 2. Not very good algorithm ... ;)
-; Here be asm dragon.
 CalculateAIMovement:
    pha
 
