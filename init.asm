@@ -1,10 +1,17 @@
 
 LoadData:
-   LoadCGRAM BGPalette, 0, 8
+   ;LoadCGRAM BGPalette, 0, 8
+   LoadCGRAM StilePal, 0, (StilePalEnd - StilePal)
+
+
    LoadCGRAM SpritePalette, 128, 32
 
-   LoadVRAM BGTiles, $1000, $0080 ; 4 tiles @ 8x8 @ 4bpp
-   LoadVRAM BGTileMap, $0400, 32 * 28 * 2 ; 32x28 tiles @ 2 byte each.
+   ;LoadVRAM BGTiles, $1000, $0080 ; 4 tiles @ 8x8 @ 4bpp
+   ;LoadVRAM BGTileMap, $0400, 32 * 28 * 2 ; 32x28 tiles @ 2 byte each.
+   LoadVRAM StileTiles, $1000, (StileTilesEnd - StileTiles)
+   LoadVRAM StileTilemap, $0400, (StileTilemapEnd - StileTilemap)
+
+
    LoadVRAM BallSprite, $2000, $0020 ; 8x8 @ 4bpp, index 0
    LoadVRAM PillarEdgeSprite, $2010, $0020
    LoadVRAM PillarMiddleSprite, $2020, $0020

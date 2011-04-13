@@ -131,7 +131,7 @@ InitSPC:
 
    jsr StallInitSPC
 
-   TransferBlockSPC :TestSPCROM TestSPCROM, $8000, $4000 ; Transfer test rom
+   TransferBlockSPC :SPCROM SPCROM, $8000, (SPCROMEND - SPCROM) ; Transfer test rom
    SPCJump $8000 ; Branch to it.
 
    plx
