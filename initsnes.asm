@@ -35,7 +35,7 @@ InitializeSNES:
   PHK			;set Data Bank = Program Bank
   PLB
 
-  LDA #$0000	;set Direct Page = $0000
+  LDA.W #$0000	;set Direct Page = $0000
   TCD			;Transfer Accumulator to Direct Register
 
   LDX $1FFD		;we clear all the mem at one point ...
